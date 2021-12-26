@@ -1,19 +1,31 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import Book from './Book'
 import * as BooksAPI from '../BooksAPI'
-import { Link } from 'react-router-dom'
 
 class Search extends React.Component {
     state = {
         searchResult: [],
     }
 
-    searchHandler(e) {
-        BooksAPI.search(e).then(x => {
+    constructor(props) {
+        super()
+    }
 
-            if (x && Array.isArray(x)) {
+    searchHandler(e) {
+        BooksAPI.search(e).then(searchBooks => {
+
+            if (searchBooks && Array.isArray(searchBooks)) {
+                let booksWithShelf = searchBooks.map(b => {
+                    let result = this.props.bookList.filter(z => z.id === b.id);
+                    if (result.length > 0) {
+                        b.shelf = result[0].shelf;
+                    }
+                    return b
+                })
+
                 this.setState({
-                    searchResult: x
+                    searchResult: booksWithShelf
                 })
             }
             else {
@@ -27,15 +39,7 @@ class Search extends React.Component {
     changeStatus = (book, status) => {
 
         BooksAPI.update(book, status).then(x => {
-            this.getBooks()
-        })
-    }
-    
-    getBooks() {
-        BooksAPI.getAll().then(x => {
-            this.setState({
-                bookList: x
-            })
+            this.props.bookUdateHandler()
         })
     }
 
